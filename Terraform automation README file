@@ -1,74 +1,59 @@
-End-to-End Infrastructure Automation: AWS, Terraform, and Maven
+**End-to-End Infrastructure Automation: AWS, Terraform, and Maven**
 
-Project Objective
+**Project Objective**
 The primary goal of this project was to establish a "One-Click" deployment setup for a cloud environment. I aimed to automate the entire lifecycle—from launching an AWS server to installing Java/Maven and executing a live application—eliminating the need for any manual intervention in the AWS Console.
 
-Tech Stack
-Cloud Provider: AWS (EC2)
+**Tech Stack**
+- Cloud Provider: AWS (EC2)
+- Infrastructure as Code (IaC): Terraform
+- Language: Java 17 (Amazon Corretto)
+- Build Tool: Apache Maven
+- Automation: Bash Scripting (via User Data)
 
-Infrastructure as Code (IaC): Terraform
+**Step-by-Step Implementation**
 
-Language: Java 17 (Amazon Corretto)
-
-Build Tool: Apache Maven
-
-Automation: Bash Scripting (via User Data)
-
-📂 Step-by-Step Implementation
-1. Initial Setup & Environment Preparation
+**1. Initial Setup & Environment Preparation**
 Before writing any infrastructure code, I prepared my local control station:
 
 Terraform Installation: Installed Terraform via the official HashiCorp repository to ensure stability.
-
 AWS Authentication: Executed aws configure to securely link my Access Key and Secret Key, granting my local system permission to manage resources on my AWS account.
 
-2. The Blueprint (main.tf)
+**2. main.tf file**
 I developed a main.tf file that serves as the architectural map for the environment. It includes:
 
 Region: North Virginia (us-east-1).
-
 Instance: A t2.micro instance running Amazon Linux.
-
 Security: Linked the mavenproject key pair for secure SSH access.
-
 Bootstrapping (The Automation Script): I wrote a script that triggers immediately upon server launch to:
 
 Install Java 17 and Apache Maven.
-
 Generate a fresh Maven project structure.
-
 Use the sed command to programmatically update the pom.xml for Java 17 compatibility.
-
 Build and execute the final application.
 
-3. Execution Workflow
+**3. Execution Workflow**
 The project was deployed using the standard Terraform lifecycle:
 
 Bash
-
 terraform init          # Downloads the required AWS plugins
 terraform validate      # Verifies the code for syntax errors
 terraform plan          # Previews the exact resources to be built
 terraform apply -auto-approve  # Launches the server and starts the automation
-🔧 Challenges & Troubleshooting
-During development, I faced several real-world hurdles and successfully resolved them:
 
-Credential Recognition: Terraform initially failed to recognize my AWS account. I resolved this by re-running aws configure and verifying my IAM keys.
+**Challenges & Troubleshooting**
+- During development, I faced several real-world hurdles and successfully resolved them:
+- Credential Recognition: Terraform initially failed to recognize my AWS account. I resolved this by re-running aws configure and verifying my IAM keys.
+- Script Encoding Issues: The automation script failed to execute due to encoding errors. I fixed this by using the <<-EOF (Heredoc) format, making the script clean and readable for the server.
+- SSH Connection Timeout: I was unable to log into the server initially. I identified that Port 22 was closed by default and manually updated the AWS Security Group settings to allow SSH access.
 
-Script Encoding Issues: The automation script failed to execute due to encoding errors. I fixed this by using the <<-EOF (Heredoc) format, making the script clean and readable for the server.
-
-SSH Connection Timeout: I was unable to log into the server initially. I identified that Port 22 was closed by default and manually updated the AWS Security Group settings to allow SSH access.
-
-📊 Verifying the Results
+**Verifying the Results**
 After deployment, I logged into the instance via SSH to audit the automated logs:
 
 Build Success: Running cat /var/log/maven_build.log showed a "BUILD SUCCESS" status.
-
 App Output: Running cat /var/log/app_output.log displayed the "Hello World!" message, confirming the automation worked perfectly.
 
-🧹 Clean Up
+**Clean Up**
 To follow cost-management best practices, I decommission the infrastructure after testing:
 
 Bash
-
 terraform destroy -auto-approve  # Safely deletes all resources
