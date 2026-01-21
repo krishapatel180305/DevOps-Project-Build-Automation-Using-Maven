@@ -31,6 +31,43 @@ Generate a fresh Maven project structure.
 Use the sed command to programmatically update the pom.xml for Java 17 compatibility.
 Build and execute the final application.
 
+**sample**
+# 1. Cloud Provider Setup with Credentials
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "Your Access-key"  
+  secret_key = "Your Secret-key" 
+
+# 2. EC2 Instance Definition
+resource "aws_instance" "maven_server" {
+  ami           = "ami-02dc6e3e481e2bbc5"
+  instance_type = "t2.micro"
+  key_name      = "mavenproject"
+
+  tags = {
+    Name = "Maven-One-Click-Automation"
+  }
+
+  # 3. User Data: Automation Logic
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo yum update -y
+    sudo yum install -y java-17-amazon-corretto-devel maven
+    
+    mkdir -p /opt/my-app
+    cd /opt/my-app
+    
+    mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+cd my-app
+
+    sed -i '/<url>http:\/\/maven.apache.org<\/url>/a \  <properties>\n    <maven.compiler.source>17<\/maven.compiler.source>\n    <maven.compiler.target>17<\/maven.compiler.target>\n  <\/properties>' pom.xml
+
+    mvn clean package > /var/log/maven_build.log
+    java -cp target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.App > /var/log/app_output.log
+  EOF
+}
+
 **3. Execution Workflow**
 The project was deployed using the standard Terraform lifecycle:
 
